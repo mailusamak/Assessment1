@@ -12,8 +12,10 @@ namespace Assessment1.Models
         [Key]
         public string BatchId { get; set; }
         [Required]
+        public int BusinessUnitId { get; set; }
+        [NotMapped]
         public string BusinessUnit { get; set; }
-        public string expiryDate { get; set; }
+        public DateTime expiryDate { get; set; }
         public DateTime batchpublishedDate { get; set; }
     }
 }

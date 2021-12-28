@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Assessment1.Data
+namespace Assessment1.Test.Data
 {
     public class ApplicationDBContext : DbContext
     {
@@ -14,7 +14,6 @@ namespace Assessment1.Data
         {
 
         }
-        public DbSet<BusinessUnitMaster> BusinessUnitMaster { get; set; }
         public DbSet<Batch> Batch { get; set; }
         public DbSet<ACLreadUsers> ACLreadUsers { get; set; }
         public DbSet<ACLreadGroups> ACLreadGroups { get; set; }

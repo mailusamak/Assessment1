@@ -11,7 +11,7 @@ namespace Assessment1.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required]
+        
         public string readUsers { get; set; }
         [Required]
         [ForeignKey("BatchId")]

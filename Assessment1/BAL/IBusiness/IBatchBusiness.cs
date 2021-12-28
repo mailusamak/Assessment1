@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Assessment1.IRepository
+namespace Assessment1.BAL.IBusiness
 {
-   public interface IBatchRepository
+    public interface IBatchBusiness
     {
         public object getBatchData(string batchId);
         public Batch getBatchById(string batchId);
@@ -16,5 +16,6 @@ namespace Assessment1.IRepository
         public string[] GetReadGroupsById(string batchId);
         public BatchVM GetBatchVMById(string batchId);
         public string insertBatchData(BatchVM batchvm);
+        public int getBusinessUnitID(string businessUnit);
     }
 }

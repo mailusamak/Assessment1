@@ -1,15 +1,14 @@
-﻿using Assessment1.IBusiness;
-using Assessment1.Models;
+﻿using Assessment1.Models;
 using Assessment1.ModelView;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Assessment1.Repository;
-using Assessment1.IRepository;
 using Assessment1.Data;
+using Assessment1.BAL.IBusiness;
+using Assessment1.DAL.IRepository;
 
-namespace Assessment1.Business
+namespace Assessment1.BAL.Business
 {
     public class BatchBusiness : IBatchBusiness
     {
@@ -110,6 +109,19 @@ namespace Assessment1.Business
             catch (Exception ex)
             {
                 throw ex;
+            }
+        }
+        public int getBusinessUnitID(string businessUnit)
+        {
+            try
+            {
+                int result = _objbatchRepository.getBusinessUnitID(businessUnit);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                throw;
             }
         }
     }

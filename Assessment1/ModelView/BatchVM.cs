@@ -14,9 +14,10 @@ namespace Assessment1.ModelView
 
         public string BatchId { get; set; }
         [Required(ErrorMessage = "BusinessUnit required")]
+        public int BusinessUnitId { get; set; }
         public string BusinessUnit { get; set; }
         public string expiryDate { get; set; }
-        public string batchpublishedDate { get; set; }
+        public DateTime batchpublishedDate { get; set; }
 
         public static explicit operator BatchVM(List<object> v)
         {

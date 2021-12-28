@@ -1,5 +1,5 @@
-﻿using Assessment1.Data;
-using Assessment1.IRepository;
+﻿using Assessment1.DAL.IRepository;
+using Assessment1.Data;
 using Assessment1.Models;
 using Assessment1.ModelView;
 using System;
@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Assessment1.Repository
+namespace Assessment1.DAL.Repository
 {
     public class BatchRepository : IBatchRepository
     {
         private readonly ApplicationDBContext _db;
+
 
         public BatchRepository(ApplicationDBContext db)
         {
@@ -46,8 +47,7 @@ namespace Assessment1.Repository
         {
             try
             {
-                Batch batch = _db.Batch.Where(x => x.BatchId == batchId)
-                                .Select(x => new Batch { BatchId = x.BatchId, BusinessUnit = x.BusinessUnit, expiryDate = x.expiryDate, batchpublishedDate = x.batchpublishedDate }).FirstOrDefault();
+                Batch batch = (from b in _db.Batch join bu in _db.BusinessUnitMaster on b.BusinessUnitId equals bu.Id where b.BatchId == batchId select new Batch { BatchId = b.BatchId, BusinessUnit = bu.BusinessUnit, BusinessUnitId = b.BusinessUnitId, expiryDate = b.expiryDate, batchpublishedDate = b.batchpublishedDate }).FirstOrDefault();
                 return batch;
             }
             catch (Exception ex)
@@ -78,23 +78,23 @@ namespace Assessment1.Repository
         {
             try
             {
-
-
                 Batch batch = getBatchById(batchId);
+                if (batch == null)
+                {
+                    throw new NullReferenceException("Batch Not found");
+                }
                 attributes[] attribute = GetAttributesById(batchId);
                 acl objacl = new acl();
                 objacl.readUsers = GetReadUsersById(batchId);
                 objacl.readGroups = GetReadGroupsById(batchId);
 
                 BatchVM batchVM = new BatchVM();
-                if (batch == null)
-                {
-                    throw new NullReferenceException("Batch Not found");
-                }
+
                 batchVM.BatchId = batch.BatchId;
+                batchVM.BusinessUnitId = batch.BusinessUnitId;
                 batchVM.BusinessUnit = batch.BusinessUnit;
-                batchVM.expiryDate = batch.expiryDate;
-                batchVM.batchpublishedDate = batch.batchpublishedDate.ToString();
+                batchVM.expiryDate = Convert.ToString(batch.expiryDate.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'"));
+                batchVM.batchpublishedDate = batch.batchpublishedDate;
                 batchVM.attributes = attribute;
                 batchVM.acl = objacl;
 
@@ -116,18 +116,26 @@ namespace Assessment1.Repository
 
                 Batch batch = new Batch();
                 batch.BatchId = batchId;
-                batch.BusinessUnit = batchvm.BusinessUnit;
-                batch.expiryDate = batchvm.expiryDate;
+                batch.BusinessUnitId = batchvm.BusinessUnitId;
+                batch.expiryDate = Convert.ToDateTime(batchvm.expiryDate);
                 batch.batchpublishedDate = DateTime.Now;
 
                 List<ACLreadUsers> aCLreadUsers = new List<ACLreadUsers>();
                 List<ACLreadGroups> aCLreadGroups = new List<ACLreadGroups>();
                 List<attributes> lstattributes = new List<attributes>();
+                if (batchvm.acl.readUsers != null && batchvm.acl.readUsers.Count() > 0)
+                {
+                    aCLreadUsers.AddRange(batchvm.acl.readUsers.Select(item => new ACLreadUsers() { readUsers = item, BatchId = batchId }));
+                }
+                if (batchvm.acl.readGroups != null && batchvm.acl.readGroups.Count() > 0)
+                {
+                    aCLreadGroups.AddRange(batchvm.acl.readGroups.Select(item => new ACLreadGroups() { readGroups = item, BatchId = batchId }));
+                }
 
-                aCLreadUsers.AddRange(batchvm.acl.readUsers.Select(item => new ACLreadUsers() { readUsers = item, BatchId = batchId }));
-                aCLreadGroups.AddRange(batchvm.acl.readGroups.Select(item => new ACLreadGroups() { readGroups = item, BatchId = batchId }));
-                lstattributes.AddRange(batchvm.attributes.Select(item => new attributes() { key = item.key, value = item.value, BatchId = batchId }));
-
+                if (batchvm.attributes != null && batchvm.attributes.Count() > 0)
+                {
+                    lstattributes.AddRange(batchvm.attributes.Select(item => new attributes() { key = item.key, value = item.value, BatchId = batchId }));
+                }
                 _db.Batch.Add(batch);
                 _db.SaveChanges();
 
@@ -159,5 +167,18 @@ namespace Assessment1.Repository
 
         }
 
+        public int getBusinessUnitID(string businessUnit)
+        {
+            try
+            {
+                int result = _db.BusinessUnitMaster.Where(x => x.BusinessUnit.ToUpper() == businessUnit.ToUpper()).Select(x => x.Id).SingleOrDefault();
+                return result;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
     }
 }
