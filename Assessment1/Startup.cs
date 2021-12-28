@@ -41,7 +41,7 @@ namespace Assessment1
 
             services.AddDbContext<ApplicationDBContext>(options =>
             //options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            options.UseSqlServer(common.getConnectionStringFromSecret()));
+            options.UseSqlServer(getConnectionStringFromSecret()));
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IBatchBusiness, BatchBusiness>();
@@ -83,6 +83,27 @@ namespace Assessment1
             //        name: "default",
             //        pattern: "{controller=WeatherForecast}/{action=Get}/{id?}");
             //});
+        }
+
+        private string getConnectionStringFromSecret()
+        {
+            string url = Configuration.GetValue<string>("KeyVault:url");
+            string clientId = Configuration.GetValue<string>("KeyVault:ClientId");
+            string clientSecret = Configuration.GetValue<string>("KeyVault:ClientSecret");
+            var _keyVaultClient = new KeyVaultClient(
+            async (string authority, string resource, string scope) =>
+            {
+                var authContext = new AuthenticationContext(authority);
+                //var clientCred = new ClientCredential("73f718ec-faa9-4b40-bc9b-0854988b3cdd", "~Ye7Q~.bP~fMWe5f3EsD8-mISKoByzbvTrhoj");
+                var clientCred = new ClientCredential(clientId, clientSecret);
+                var result = await authContext.AcquireTokenAsync(resource, clientCred);
+                return result.AccessToken;
+            });
+
+            //_keyVaultClient.SetSecretAsync(url, "Password", "This is my password");
+
+            var result = _keyVaultClient.GetSecretAsync(url, "SecretKey-AssesmentOne-ConnectionString").GetAwaiter().GetResult();
+            return result.Value;
         }
     }
 }

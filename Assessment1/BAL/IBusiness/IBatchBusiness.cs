@@ -17,5 +17,6 @@ namespace Assessment1.BAL.IBusiness
         public BatchVM GetBatchVMById(string batchId);
         public string insertBatchData(BatchVM batchvm);
         public int getBusinessUnitID(string businessUnit);
+        public bool batchIdExist(string batchId);
     }
 }

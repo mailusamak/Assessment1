@@ -159,25 +159,44 @@ namespace Assessment1.Controllers
         }
 
         [HttpPost]
-        public IActionResult FileUpload()
+        [Route("/batch/{batchId}/{filename}")]
+        public IActionResult FileUpload(string batchId, string filename)
         {
+            Error objerror = new Error();
+            List<errors> lsterrors = new List<errors>();
+            objerror.correlationId = Guid.NewGuid().ToString();
             try
             {
-                string connectionString = @"DefaultEndpointsProtocol=https;AccountName=assesmentonestorageacc;AccountKey=Y4p+JFXbk1Q7U6vzdAqPS4BBtHWYGBznWwJqN2vXe9HLhjVPRoBYOt74ZysJR+8vrfFlwBo+WWpDz0C4K1WcDg==;EndpointSuffix=core.windows.net";
-                string containerName = "testassesmentonecontainer";
+                Common common = new Common();
+                string connectionString = common.getConnectionStringFromSecretForFileUploadContainer();
+                //string connectionString = @"DefaultEndpointsProtocol=https;AccountName=assesmentonestorageacc;AccountKey=Y4p+JFXbk1Q7U6vzdAqPS4BBtHWYGBznWwJqN2vXe9HLhjVPRoBYOt74ZysJR+8vrfFlwBo+WWpDz0C4K1WcDg==;EndpointSuffix=core.windows.net";
+
+                if (!_objbatchBusiness.batchIdExist(batchId))
+                {
+                    objerror.correlationId = batchId;
+                    lsterrors.Add(new errors { source = "BatchFileUpload", description = "batchId doesn't exist!!!" });
+                    objerror.errors = lsterrors.ToArray();
+                    return BadRequest(objerror);
+                }
+                //string containerName = "testassesmentonecontainer";
+                string containerName = batchId;
 
                 var blobContainerClient = new BlobContainerClient(connectionString, containerName);
                 blobContainerClient.CreateIfNotExists();
 
-                var files = Directory.GetFiles(@"D:\Usama\Assessment\TempFiles");
+                //var files = Directory.GetFiles(@"D:\Usama\Assessment\TempFiles");
+                var files = Directory.GetFiles(Common.GetConfigValue("KeyValue:FilePath"));
 
                 List<string> lstFileNameExist = Common.GetExistFileName(blobContainerClient, files);
                 if (lstFileNameExist != null && lstFileNameExist.Count > 0)
                 {
-                    return BadRequest("Filename already exist!!!");
+                    lsterrors.AddRange(lstFileNameExist.Select(item => new errors { source = "BatchFileUpload", description = item + " already exist" }));
+                    objerror.errors = lsterrors.ToArray();
+                    return BadRequest(objerror);
                 }
 
                 Common.UploadFilesInContainer(blobContainerClient, files);
+                return Ok("Created");
             }
             catch (Exception ex)
             {

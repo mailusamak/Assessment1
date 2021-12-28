@@ -176,7 +176,22 @@ namespace Assessment1.DAL.Repository
             }
             catch (Exception ex)
             {
+                throw ex;
+            }
+        }
 
+        public bool batchIdExist(string batchId)
+        {
+            try
+            {
+                bool retval = false;
+                string strBatchId = _db.Batch.Where(x => x.BatchId == batchId).Select(x => x.BatchId).FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(strBatchId))
+                    retval = true;
+                return retval;
+            }
+            catch (Exception ex)
+            {
                 throw ex;
             }
         }

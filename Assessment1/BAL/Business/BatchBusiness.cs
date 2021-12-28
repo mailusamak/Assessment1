@@ -121,7 +121,18 @@ namespace Assessment1.BAL.Business
             catch (Exception ex)
             {
                 throw ex;
-                throw;
+            }
+        }
+
+        public bool batchIdExist(string batchId)
+        {
+            try
+            {
+                return _objbatchRepository.batchIdExist(batchId);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }
